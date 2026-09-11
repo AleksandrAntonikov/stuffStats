@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">StuffStats</string>
+  <string name="home_title">Your items</string>
+  <string name="home_empty_title">No tracked items yet</string>
+  <string name="home_empty_body">Add an item to start measuring its real-world value.</string>
+  <string name="add_item">Add item</string>
+  <string name="view_demo_item">Open navigation preview</string>
+  <string name="dashboard">Dashboard</string>
+  <string name="add_item_title">Add item</string>
+  <string name="edit_item_title">Edit item</string>
+  <string name="item_details_title">Item details</string>
+  <string name="add_usage_title">Add usage</string>
+  <string name="photo_history_title">Photo history</string>
+  <string name="phase_zero_placeholder">This screen is ready for implementation in the next phase.</string>
+  <string name="back">Back</string>
+  <string name="add_usage">Add usage</string>
+  <string name="view_photos">View photos</string>
+  <string name="edit_item">Edit item</string>
+  <string name="phase_zero_label">Phase 0 · Local-first Android foundation</string>
+</resources>

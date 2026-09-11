@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">StuffStats</string>
+  <string name="home_title">Ваши вещи</string>
+  <string name="home_empty_title">Пока нет вещей</string>
+  <string name="home_empty_body">Добавьте вещь, чтобы начать измерять её реальную ценность.</string>
+  <string name="add_item">Добавить вещь</string>
+  <string name="view_demo_item">Проверить навигацию</string>
+  <string name="dashboard">Статистика</string>
+  <string name="add_item_title">Добавить вещь</string>
+  <string name="edit_item_title">Изменить вещь</string>
+  <string name="item_details_title">Карточка вещи</string>
+  <string name="add_usage_title">Добавить использование</string>
+  <string name="photo_history_title">История фотографий</string>
+  <string name="phase_zero_placeholder">Экран подготовлен для реализации в следующей фазе.</string>
+  <string name="back">Назад</string>
+  <string name="add_usage">Добавить использование</string>
+  <string name="view_photos">История фотографий</string>
+  <string name="edit_item">Изменить вещь</string>
+  <string name="phase_zero_label">Фаза 0 · Local-first Android-каркас</string>
+</resources>
