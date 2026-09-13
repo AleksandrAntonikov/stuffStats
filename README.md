@@ -6,7 +6,7 @@ Footwear is the first complete use case, but the domain is intentionally generic
 
 ## Current status
 
-Phase 0 is implemented:
+Phases 0 and 1 are implemented:
 
 - native Android project using Kotlin and Jetpack Compose;
 - Material 3 light, dark, and dynamic color themes;
@@ -16,7 +16,7 @@ Phase 0 is implemented:
 - unit and instrumentation test foundations;
 - GitHub Actions verification.
 
-No product data is persisted yet. Item CRUD and Room belong to Phase 1.
+Items and primary metrics now persist in Room. You can create, edit, archive and restore items; usage recording, photos and statistics remain future phases. See [Phase 1 details](docs/phase-1-local-items.md).
 
 ## Technology baseline
 

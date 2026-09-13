@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -40,6 +41,7 @@ android {
         compose = true
         buildConfig = true
     }
+    sourceSets["androidTest"].assets.srcDir("$projectDir/schemas")
 
     packaging {
         resources {
@@ -55,6 +57,12 @@ kotlin {
 }
 
 dependencies {
+    // Match Navigation's runtime with Room's migration-test serialization runtime.
+    implementation(platform(libs.kotlinx.serialization.bom))
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    androidTestImplementation(libs.androidx.room.testing)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -77,3 +85,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
+
+ksp { arg("room.schemaLocation", "$projectDir/schemas") }
