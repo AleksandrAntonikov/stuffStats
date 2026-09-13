@@ -15,11 +15,12 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.aleksandrantonikov.stuffstats.R
 import com.aleksandrantonikov.stuffstats.domain.*
+import java.io.File
 import java.time.LocalDate
 import java.util.Locale
 
 @Composable
-fun ItemList(state: ItemsState, add: () -> Unit, open: (Long) -> Unit) {
+fun ItemList(state: ItemsState, add: () -> Unit, open: (Long) -> Unit, photoFile: (String) -> File?) {
     var archived by rememberSaveable { mutableStateOf(false) }
     Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.home_title)) }) },
         floatingActionButton = { FloatingActionButton(onClick = add) { Text(stringResource(R.string.add_item), Modifier.padding(16.dp)) } }) { padding ->
@@ -39,6 +40,10 @@ fun ItemList(state: ItemsState, add: () -> Unit, open: (Long) -> Unit) {
                             val stats = state.statsFor(item)
                             Card(onClick = { open(item.id) }, modifier = Modifier.fillMaxWidth()) {
                                 Column(Modifier.padding(16.dp)) {
+                                    state.photosFor(item.id).firstOrNull()?.let { photo ->
+                                        StoredPhotoImage(photo.imagePath, photoFile, Modifier.fillMaxWidth().height(140.dp))
+                                        Spacer(Modifier.height(8.dp))
+                                    }
                                     Text(item.name, style = MaterialTheme.typography.titleLarge)
                                     Text(categoryLabel(item.category))
                                     Text("${stats.totalUsage.asPlainValue()} ${item.metric.unit}")
@@ -63,12 +68,19 @@ fun ItemDetails(
     edit: () -> Unit,
     addUsage: () -> Unit,
     editUsage: (Long) -> Unit,
+    photos: List<ItemPhoto>,
+    addPhoto: () -> Unit,
+    viewPhotos: () -> Unit,
+    photoFile: (String) -> File?,
     archive: () -> Unit,
 ) {
     var confirm by rememberSaveable { mutableStateOf(false) }
     ItemFrame(stringResource(R.string.item_details_title), back, busy) {
         Text(item.name, style = MaterialTheme.typography.headlineMedium)
         Text(categoryLabel(item.category))
+        photos.firstOrNull()?.let { photo ->
+            StoredPhotoImage(photo.imagePath, photoFile, Modifier.fillMaxWidth().height(260.dp))
+        }
         Text("${stats.totalUsage.asPlainValue()} ${item.metric.unit}", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.testTag("total_usage"))
         Text(
             stats.costPerUnit?.let { "${it.toPlainString()} ${item.currency} / ${item.metric.unit}" }
@@ -82,6 +94,10 @@ fun ItemDetails(
         if (item.notes.isNotEmpty()) Text(item.notes)
         if (error) Text(stringResource(R.string.storage_error), color = MaterialTheme.colorScheme.error)
         Button(onClick = addUsage, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.add_usage)) }
+        Button(onClick = addPhoto, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.add_photo)) }
+        OutlinedButton(onClick = viewPhotos, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.recorded_photos, photos.size))
+        }
         Text(stringResource(R.string.usage_history), style = MaterialTheme.typography.titleLarge)
         if (events.isEmpty()) {
             Text(stringResource(R.string.no_usage_events))

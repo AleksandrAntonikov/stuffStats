@@ -60,6 +60,7 @@ dependencies {
     // Match Navigation's runtime with Room's migration-test serialization runtime.
     implementation(platform(libs.kotlinx.serialization.bom))
     implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.exifinterface)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     androidTestImplementation(libs.androidx.room.testing)

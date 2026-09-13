@@ -37,5 +37,5 @@ Tests cover exact decimal parsing, invalid inputs, item-scoped totals, cost roun
 - `lintDebug`: passed; existing dependency and Gradle deprecation warnings remain informational.
 - `assembleDebug`: passed; APK at `app/build/outputs/apk/debug/app-debug.apk`.
 - `connectedDebugAndroidTest`: 7 passed on Medium_Phone_API_36.1 (Android 16).
-- API 26 coverage remains configured in GitHub Actions but has not run remotely for this uncommitted phase.
+- API 26 coverage remains configured in GitHub Actions; physical-device acceptance is not claimed.
 - Physical-device acceptance is not claimed.

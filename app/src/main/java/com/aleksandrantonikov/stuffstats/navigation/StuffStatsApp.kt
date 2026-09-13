@@ -20,8 +20,16 @@ import com.aleksandrantonikov.stuffstats.ui.item.*
 fun StuffStatsApp() {
     val context = LocalContext.current.applicationContext
     val database = remember(context) { StuffStatsDatabase.get(context) }
+    val photoFiles = remember(context) { PhotoFileStore(context) }
     val model: ItemsViewModel = viewModel(factory = viewModelFactory {
-        initializer { ItemsViewModel(RoomItemRepository(database), RoomUsageEventRepository(database)) }
+        initializer {
+            ItemsViewModel(
+                RoomItemRepository(database),
+                RoomUsageEventRepository(database),
+                RoomItemPhotoRepository(database),
+                photoFiles,
+            )
+        }
     })
     val state by model.state.collectAsStateWithLifecycle()
     val busy by model.saving.collectAsStateWithLifecycle()
@@ -30,7 +38,12 @@ fun StuffStatsApp() {
     BackHandler(enabled = busy) { }
     NavHost(navController = nav, startDestination = AppDestination.Home.route) {
         composable(AppDestination.Home.route) {
-            ItemList(state, add = { model.clearError(); nav.navigate(AppDestination.AddItem.route) }, open = { model.clearError(); nav.navigate(AppDestination.ItemDetails.routeFor(it)) })
+            ItemList(
+                state,
+                add = { model.clearError(); nav.navigate(AppDestination.AddItem.route) },
+                open = { model.clearError(); nav.navigate(AppDestination.ItemDetails.routeFor(it)) },
+                photoFile = model::photoFile,
+            )
         }
         composable(AppDestination.AddItem.route) {
             ItemEditor(null, busy, error, back = { nav.navigateUp() }, save = { model.save(it) { nav.popBackStack() } })
@@ -56,6 +69,10 @@ fun StuffStatsApp() {
                         edit = { model.clearError(); nav.navigate(AppDestination.EditItem.routeFor(item.id)) },
                         addUsage = { model.clearError(); nav.navigate(AppDestination.AddUsage.routeFor(item.id)) },
                         editUsage = { model.clearError(); nav.navigate(AppDestination.EditUsage.routeFor(item.id, it)) },
+                        photos = state.photosFor(item.id),
+                        addPhoto = { model.clearError(); nav.navigate(AppDestination.AddPhoto.routeFor(item.id)) },
+                        viewPhotos = { model.clearError(); nav.navigate(AppDestination.PhotoHistory.routeFor(item.id)) },
+                        photoFile = model::photoFile,
                         archive = { model.archive(item) { nav.popBackStack() } },
                     )
                 }
@@ -97,6 +114,51 @@ fun StuffStatsApp() {
                     back = { nav.navigateUp() },
                     save = { model.saveUsage(it) { nav.popBackStack() } },
                     delete = { model.deleteUsage(event) { nav.popBackStack() } },
+                )
+            }
+        }
+        composable(
+            AppDestination.AddPhoto.route,
+            arguments = listOf(navArgument("itemId") { type = NavType.LongType }),
+        ) { entry ->
+            val item = state.items.find { it.id == entry.arguments?.getLong("itemId") }
+            if (item == null) {
+                ItemFrame(stringResource(R.string.add_photo_title), { nav.navigateUp() }) {
+                    Text(stringResource(if (state.loading) R.string.loading else R.string.item_missing))
+                }
+            } else {
+                PhotoEditor(
+                    item = item,
+                    busy = busy,
+                    error = error,
+                    back = { nav.navigateUp() },
+                    newCapture = model::newPhotoCapture,
+                    discardCapture = model::discardPhotoCapture,
+                    save = { uri, token, date, notes ->
+                        model.savePhoto(item, uri, token, date, notes) { nav.popBackStack() }
+                    },
+                )
+            }
+        }
+        composable(
+            AppDestination.PhotoHistory.route,
+            arguments = listOf(navArgument("itemId") { type = NavType.LongType }),
+        ) { entry ->
+            val item = state.items.find { it.id == entry.arguments?.getLong("itemId") }
+            if (item == null) {
+                ItemFrame(stringResource(R.string.photo_history_title), { nav.navigateUp() }) {
+                    Text(stringResource(if (state.loading) R.string.loading else R.string.item_missing))
+                }
+            } else {
+                PhotoHistory(
+                    item = item,
+                    photos = state.photosFor(item.id),
+                    busy = busy,
+                    error = error,
+                    back = { nav.navigateUp() },
+                    add = { model.clearError(); nav.navigate(AppDestination.AddPhoto.routeFor(item.id)) },
+                    delete = { model.deletePhoto(it) { } },
+                    photoFile = model::photoFile,
                 )
             }
         }

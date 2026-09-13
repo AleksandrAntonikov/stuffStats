@@ -6,7 +6,7 @@ Footwear is the first complete use case, but the domain is intentionally generic
 
 ## Current status
 
-Phases 0, 1 and 2 are implemented:
+Phases 0 through 3 are implemented:
 
 - native Android project using Kotlin and Jetpack Compose;
 - Material 3 light, dark, and dynamic color themes;
@@ -16,7 +16,7 @@ Phases 0, 1 and 2 are implemented:
 - unit and instrumentation test foundations;
 - GitHub Actions verification.
 
-Items, primary metrics and manual usage events now persist in Room. You can create, edit, archive and restore items; record, edit and delete usage; and see exact totals and cost-per-unit values. Photos and broader dashboard statistics remain future phases. See [Phase 1 details](docs/phase-1-local-items.md) and [Phase 2 details](docs/phase-2-usage-events.md).
+Items, primary metrics, manual usage events and condition photos now persist locally. You can create, edit, archive and restore items; record, edit and delete usage; see exact totals and cost-per-unit values; and build a chronological photo history using the camera or system photo picker. Broader dashboard statistics remain a future phase. See [Phase 1 details](docs/phase-1-local-items.md), [Phase 2 details](docs/phase-2-usage-events.md) and [Phase 3 details](docs/phase-3-condition-photos.md).
 
 ## Technology baseline
 

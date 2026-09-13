@@ -24,4 +24,10 @@ class AppDestinationTest {
     fun usageEditRouteReplacesBothArguments() {
         assertEquals("item/42/usage/7/edit", AppDestination.EditUsage.routeFor(itemId = 42, eventId = 7))
     }
+
+    @Test
+    fun photoRoutesReplaceItemArgument() {
+        assertEquals("item/42/photos/add", AppDestination.AddPhoto.routeFor(itemId = 42))
+        assertEquals("item/42/photos", AppDestination.PhotoHistory.routeFor(itemId = 42))
+    }
 }

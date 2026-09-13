@@ -43,10 +43,15 @@ interface ItemDao {
     @Query("UPDATE items SET isArchived = :archived WHERE id = :id")
     suspend fun archive(id: Long, archived: Boolean): Int
 }
-@Database(entities = [ItemEntity::class, MetricEntity::class, UsageEventEntity::class], version = 2, exportSchema = true)
+@Database(
+    entities = [ItemEntity::class, MetricEntity::class, UsageEventEntity::class, ItemPhotoEntity::class],
+    version = 3,
+    exportSchema = true,
+)
 abstract class StuffStatsDatabase : RoomDatabase() {
     abstract fun items(): ItemDao
     abstract fun usageEvents(): UsageEventDao
+    abstract fun itemPhotos(): ItemPhotoDao
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -56,10 +61,18 @@ abstract class StuffStatsDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_usage_events_itemId` ON `usage_events` (`itemId`)")
             }
         }
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `item_photos` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `itemId` INTEGER NOT NULL, `imagePath` TEXT NOT NULL, `dateEpochDay` INTEGER NOT NULL, `usageValueAtPhoto` TEXT NOT NULL, `notes` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, FOREIGN KEY(`itemId`) REFERENCES `items`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)""",
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_item_photos_itemId` ON `item_photos` (`itemId`)")
+            }
+        }
         @Volatile private var instance: StuffStatsDatabase? = null
         fun get(context: Context): StuffStatsDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, StuffStatsDatabase::class.java, "stuffstats.db")
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build().also { instance = it }
         }
     }

@@ -13,6 +13,7 @@ enum class AppDestination(
     ItemDetails("item/{itemId}", R.string.item_details_title),
     AddUsage("item/{itemId}/usage/add", R.string.add_usage_title),
     EditUsage("item/{itemId}/usage/{eventId}/edit", R.string.edit_usage_title),
+    AddPhoto("item/{itemId}/photos/add", R.string.add_photo_title),
     PhotoHistory("item/{itemId}/photos", R.string.photo_history_title),
     Dashboard("dashboard", R.string.dashboard),
     ;
