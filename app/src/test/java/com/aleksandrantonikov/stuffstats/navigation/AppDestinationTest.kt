@@ -19,4 +19,9 @@ class AppDestinationTest {
         assertEquals("item/42", route)
         assertTrue("{" !in route)
     }
+
+    @Test
+    fun usageEditRouteReplacesBothArguments() {
+        assertEquals("item/42/usage/7/edit", AppDestination.EditUsage.routeFor(itemId = 42, eventId = 7))
+    }
 }

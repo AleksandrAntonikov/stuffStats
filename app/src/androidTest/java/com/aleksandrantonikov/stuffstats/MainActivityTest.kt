@@ -44,4 +44,36 @@ class MainActivityTest {
         composeRule.waitUntil(10000) { composeRule.onAllNodesWithText("$name edited").fetchSemanticsNodes().isNotEmpty() }
         composeRule.onNodeWithText("$name edited").assertIsDisplayed()
     }
+
+    @Test fun usageWorkflowCalculatesEditsAndDeletes() {
+        val name = "Usage-${System.currentTimeMillis()}"
+        composeRule.onNodeWithText(label(R.string.add_item)).performClick()
+        composeRule.onNodeWithTag("name").performTextInput(name)
+        composeRule.onNodeWithTag("price").performTextInput("100.00")
+        composeRule.onNodeWithTag("save").performScrollTo().performClick()
+        composeRule.waitUntil(10000) { composeRule.onAllNodesWithText(name).fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithText(name).performClick()
+
+        listOf("5", "7").forEach { amount ->
+            composeRule.onNodeWithText(label(R.string.add_usage)).performScrollTo().performClick()
+            composeRule.onNodeWithTag("usage_value").performTextInput(amount)
+            composeRule.onNodeWithTag("save_usage").performScrollTo().performClick()
+            composeRule.waitUntil(10000) { composeRule.onAllNodesWithTag("save_usage").fetchSemanticsNodes().isEmpty() }
+        }
+        composeRule.onNodeWithTag("total_usage").assertTextContains("12 km")
+        composeRule.onNodeWithTag("cost_per_unit").assertTextContains("8.33 USD / km")
+
+        composeRule.onNodeWithText("+5 km").performScrollTo().performClick()
+        composeRule.onNodeWithTag("usage_value").performTextReplacement("6")
+        composeRule.onNodeWithTag("save_usage").performScrollTo().performClick()
+        composeRule.waitUntil(10000) { composeRule.onAllNodesWithTag("total_usage").fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithTag("total_usage").assertTextContains("13 km")
+
+        composeRule.onNodeWithText("+6 km").performScrollTo().performClick()
+        composeRule.onNodeWithText(label(R.string.delete_usage)).performScrollTo().performClick()
+        composeRule.onNodeWithText(label(R.string.delete)).performClick()
+        composeRule.waitUntil(10000) { composeRule.onAllNodesWithTag("total_usage").fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithTag("total_usage").assertTextContains("7 km")
+        composeRule.onNodeWithTag("cost_per_unit").assertTextContains("14.29 USD / km")
+    }
 }

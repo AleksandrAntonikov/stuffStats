@@ -2,6 +2,8 @@ package com.aleksandrantonikov.stuffstats.data
 
 import android.content.Context
 import androidx.room.*
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.aleksandrantonikov.stuffstats.domain.*
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
@@ -41,13 +43,23 @@ interface ItemDao {
     @Query("UPDATE items SET isArchived = :archived WHERE id = :id")
     suspend fun archive(id: Long, archived: Boolean): Int
 }
-@Database(entities = [ItemEntity::class, MetricEntity::class], version = 1, exportSchema = true)
+@Database(entities = [ItemEntity::class, MetricEntity::class, UsageEventEntity::class], version = 2, exportSchema = true)
 abstract class StuffStatsDatabase : RoomDatabase() {
     abstract fun items(): ItemDao
+    abstract fun usageEvents(): UsageEventDao
     companion object {
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `usage_events` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `itemId` INTEGER NOT NULL, `value` TEXT NOT NULL, `dateEpochDay` INTEGER NOT NULL, `notes` TEXT NOT NULL, `source` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, FOREIGN KEY(`itemId`) REFERENCES `items`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)""",
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_usage_events_itemId` ON `usage_events` (`itemId`)")
+            }
+        }
         @Volatile private var instance: StuffStatsDatabase? = null
         fun get(context: Context): StuffStatsDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, StuffStatsDatabase::class.java, "stuffstats.db")
+                .addMigrations(MIGRATION_1_2)
                 .build().also { instance = it }
         }
     }

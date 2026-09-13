@@ -19,8 +19,9 @@ import com.aleksandrantonikov.stuffstats.ui.item.*
 @Composable
 fun StuffStatsApp() {
     val context = LocalContext.current.applicationContext
+    val database = remember(context) { StuffStatsDatabase.get(context) }
     val model: ItemsViewModel = viewModel(factory = viewModelFactory {
-        initializer { ItemsViewModel(RoomItemRepository(StuffStatsDatabase.get(context))) }
+        initializer { ItemsViewModel(RoomItemRepository(database), RoomUsageEventRepository(database)) }
     })
     val state by model.state.collectAsStateWithLifecycle()
     val busy by model.saving.collectAsStateWithLifecycle()
@@ -45,8 +46,58 @@ fun StuffStatsApp() {
                 } else if (destination == AppDestination.EditItem) {
                     ItemEditor(item, busy, error, back = { nav.navigateUp() }, save = { model.save(it) { nav.popBackStack() } })
                 } else {
-                    ItemDetails(item, busy, error, back = { nav.navigateUp() }, edit = { model.clearError(); nav.navigate(AppDestination.EditItem.routeFor(item.id)) }, archive = { model.archive(item) { nav.popBackStack() } })
+                    ItemDetails(
+                        item = item,
+                        events = state.eventsFor(item.id),
+                        stats = state.statsFor(item),
+                        busy = busy,
+                        error = error,
+                        back = { nav.navigateUp() },
+                        edit = { model.clearError(); nav.navigate(AppDestination.EditItem.routeFor(item.id)) },
+                        addUsage = { model.clearError(); nav.navigate(AppDestination.AddUsage.routeFor(item.id)) },
+                        editUsage = { model.clearError(); nav.navigate(AppDestination.EditUsage.routeFor(item.id, it)) },
+                        archive = { model.archive(item) { nav.popBackStack() } },
+                    )
                 }
+            }
+        }
+        composable(
+            AppDestination.AddUsage.route,
+            arguments = listOf(navArgument("itemId") { type = NavType.LongType }),
+        ) { entry ->
+            val item = state.items.find { it.id == entry.arguments?.getLong("itemId") }
+            if (item == null) {
+                ItemFrame(stringResource(R.string.add_usage_title), { nav.navigateUp() }) {
+                    Text(stringResource(if (state.loading) R.string.loading else R.string.item_missing))
+                }
+            } else {
+                UsageEditor(item, null, busy, error, back = { nav.navigateUp() }, save = { model.saveUsage(it) { nav.popBackStack() } })
+            }
+        }
+        composable(
+            AppDestination.EditUsage.route,
+            arguments = listOf(
+                navArgument("itemId") { type = NavType.LongType },
+                navArgument("eventId") { type = NavType.LongType },
+            ),
+        ) { entry ->
+            val itemId = entry.arguments?.getLong("itemId")
+            val item = state.items.find { it.id == itemId }
+            val event = state.events.find { it.id == entry.arguments?.getLong("eventId") && it.itemId == itemId }
+            if (item == null || event == null) {
+                ItemFrame(stringResource(R.string.edit_usage_title), { nav.navigateUp() }) {
+                    Text(stringResource(if (state.loading) R.string.loading else R.string.usage_missing))
+                }
+            } else {
+                UsageEditor(
+                    item = item,
+                    event = event,
+                    busy = busy,
+                    error = error,
+                    back = { nav.navigateUp() },
+                    save = { model.saveUsage(it) { nav.popBackStack() } },
+                    delete = { model.deleteUsage(event) { nav.popBackStack() } },
+                )
             }
         }
     }

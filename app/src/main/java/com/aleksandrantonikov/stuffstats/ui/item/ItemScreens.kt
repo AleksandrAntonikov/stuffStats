@@ -36,12 +36,13 @@ fun ItemList(state: ItemsState, add: () -> Unit, open: (Long) -> Unit) {
                     if (visible.isEmpty()) Text(stringResource(R.string.home_empty_title), Modifier.padding(vertical = 24.dp))
                     LazyColumn(contentPadding = PaddingValues(bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(visible, key = { it.id }) { item ->
+                            val stats = state.statsFor(item)
                             Card(onClick = { open(item.id) }, modifier = Modifier.fillMaxWidth()) {
                                 Column(Modifier.padding(16.dp)) {
                                     Text(item.name, style = MaterialTheme.typography.titleLarge)
                                     Text(categoryLabel(item.category))
-                                    Text("${metricLabel(item.metric.type)} · ${item.metric.unit}")
-                                    if (item.priceMinor != null) Text("${ItemValidation.priceText(item)} ${item.currency}")
+                                    Text("${stats.totalUsage.asPlainValue()} ${item.metric.unit}")
+                                    stats.costPerUnit?.let { Text("${it.toPlainString()} ${item.currency} / ${item.metric.unit}") }
                                 }
                             }
                         }
@@ -52,16 +53,49 @@ fun ItemList(state: ItemsState, add: () -> Unit, open: (Long) -> Unit) {
     }
 }
 @Composable
-fun ItemDetails(item: Item, busy: Boolean, error: Boolean, back: () -> Unit, edit: () -> Unit, archive: () -> Unit) {
+fun ItemDetails(
+    item: Item,
+    events: List<UsageEvent>,
+    stats: ItemUsageStats,
+    busy: Boolean,
+    error: Boolean,
+    back: () -> Unit,
+    edit: () -> Unit,
+    addUsage: () -> Unit,
+    editUsage: (Long) -> Unit,
+    archive: () -> Unit,
+) {
     var confirm by rememberSaveable { mutableStateOf(false) }
     ItemFrame(stringResource(R.string.item_details_title), back, busy) {
         Text(item.name, style = MaterialTheme.typography.headlineMedium)
         Text(categoryLabel(item.category))
-        Text("${metricLabel(item.metric.type)} · ${item.metric.unit}")
+        Text("${stats.totalUsage.asPlainValue()} ${item.metric.unit}", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.testTag("total_usage"))
+        Text(
+            stats.costPerUnit?.let { "${it.toPlainString()} ${item.currency} / ${item.metric.unit}" }
+                ?: stringResource(R.string.cost_per_unit_unavailable),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.testTag("cost_per_unit"),
+        )
+        Text(stringResource(R.string.recorded_events, stats.eventCount))
         Text(stringResource(R.string.purchase_price) + ": " + if (item.priceMinor == null) "—" else "${ItemValidation.priceText(item)} ${item.currency}")
         Text(stringResource(R.string.purchase_date) + ": " + (item.purchaseDate?.toString() ?: "—"))
         if (item.notes.isNotEmpty()) Text(item.notes)
         if (error) Text(stringResource(R.string.storage_error), color = MaterialTheme.colorScheme.error)
+        Button(onClick = addUsage, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.add_usage)) }
+        Text(stringResource(R.string.usage_history), style = MaterialTheme.typography.titleLarge)
+        if (events.isEmpty()) {
+            Text(stringResource(R.string.no_usage_events))
+        } else {
+            events.forEach { event ->
+                Card(onClick = { editUsage(event.id) }, modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text("+${event.value.asPlainValue()} ${item.metric.unit}", style = MaterialTheme.typography.titleMedium)
+                        Text(event.date.toString())
+                        if (event.notes.isNotEmpty()) Text(event.notes)
+                    }
+                }
+            }
+        }
         Button(onClick = edit, enabled = !busy) { Text(stringResource(R.string.edit_item)) }
         OutlinedButton(onClick = { confirm = true }, enabled = !busy) { Text(stringResource(if (item.isArchived) R.string.restore_item else R.string.archive_item)) }
     }

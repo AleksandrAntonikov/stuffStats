@@ -12,9 +12,11 @@ enum class AppDestination(
     EditItem("item/{itemId}/edit", R.string.edit_item_title),
     ItemDetails("item/{itemId}", R.string.item_details_title),
     AddUsage("item/{itemId}/usage/add", R.string.add_usage_title),
+    EditUsage("item/{itemId}/usage/{eventId}/edit", R.string.edit_usage_title),
     PhotoHistory("item/{itemId}/photos", R.string.photo_history_title),
     Dashboard("dashboard", R.string.dashboard),
     ;
 
     fun routeFor(itemId: Long): String = route.replace("{itemId}", itemId.toString())
+    fun routeFor(itemId: Long, eventId: Long): String = routeFor(itemId).replace("{eventId}", eventId.toString())
 }
