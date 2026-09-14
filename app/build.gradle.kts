@@ -61,6 +61,7 @@ dependencies {
     implementation(platform(libs.kotlinx.serialization.bom))
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.exifinterface)
+    implementation(libs.androidx.health.connect.client)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     androidTestImplementation(libs.androidx.room.testing)

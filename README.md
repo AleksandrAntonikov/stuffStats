@@ -6,7 +6,7 @@ Footwear is the first complete use case, but the domain is intentionally generic
 
 ## Current status
 
-Phases 0 through 4 are implemented:
+Phases 0 through 5 are implemented:
 
 - native Android project using Kotlin and Jetpack Compose;
 - Material 3 light, dark, and dynamic color themes;
@@ -16,7 +16,7 @@ Phases 0 through 4 are implemented:
 - unit and instrumentation test foundations;
 - GitHub Actions verification.
 
-Items, primary metrics, manual usage events and condition photos persist locally. You can create, edit, archive and restore items; record, edit and delete usage; build a chronological photo history; search and filter the catalog; and review lifetime and cross-item statistics on the dashboard. Automatic Android activity/distance collection remains a future phase. See [Phase 1 details](docs/phase-1-local-items.md), [Phase 2 details](docs/phase-2-usage-events.md), [Phase 3 details](docs/phase-3-condition-photos.md) and [Phase 4 details](docs/phase-4-dashboard-and-refinement.md).
+Items, primary metrics, usage events and condition photos persist locally. You can create, edit, archive and restore items; record usage manually; import a selected day’s distance from Health Connect; build a chronological photo history; search and filter the catalog; and review lifetime and cross-item statistics on the dashboard. See [Phase 1 details](docs/phase-1-local-items.md), [Phase 2 details](docs/phase-2-usage-events.md), [Phase 3 details](docs/phase-3-condition-photos.md), [Phase 4 details](docs/phase-4-dashboard-and-refinement.md) and [Phase 5 details](docs/phase-5-automatic-distance.md).
 
 ## Technology baseline
 
@@ -50,6 +50,7 @@ $env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
 - all user data stays local to the device;
 - no account, backend, analytics, cloud synchronization, or social features;
 - manual usage tracking must remain fully functional even if automatic sources are added later.
+- Health Connect access is optional, foreground-only, and limited to reading distance after explicit permission.
 
 See [Phase 0 decisions](docs/phase-0-decisions.md) and the [MVP acceptance scenario](docs/mvp-acceptance-scenario.md).
 

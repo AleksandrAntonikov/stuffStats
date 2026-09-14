@@ -12,6 +12,7 @@ enum class AppDestination(
     EditItem("item/{itemId}/edit", R.string.edit_item_title),
     ItemDetails("item/{itemId}", R.string.item_details_title),
     AddUsage("item/{itemId}/usage/add", R.string.add_usage_title),
+    ImportDistance("item/{itemId}/distance/import", R.string.import_distance_title),
     EditUsage("item/{itemId}/usage/{eventId}/edit", R.string.edit_usage_title),
     AddPhoto("item/{itemId}/photos/add", R.string.add_photo_title),
     PhotoHistory("item/{itemId}/photos", R.string.photo_history_title),

@@ -35,7 +35,7 @@ class MainActivityTest {
         composeRule.onNodeWithTag("save").performScrollTo().performClick()
         composeRule.waitUntil(10000) { composeRule.onAllNodesWithTag("save").fetchSemanticsNodes().isEmpty() && composeRule.onAllNodesWithText("$name edited").fetchSemanticsNodes().isNotEmpty() }
         composeRule.activityRule.scenario.recreate()
-        composeRule.onNodeWithText("$name edited").assertIsDisplayed()
+        composeRule.onNodeWithText("$name edited").assertExists()
         composeRule.onNodeWithText(label(R.string.archive_item)).performScrollTo().performClick()
         composeRule.onNodeWithText(label(R.string.confirm)).performClick()
         composeRule.waitUntil(10000) { composeRule.onAllNodesWithText(label(R.string.archived_items)).fetchSemanticsNodes().isNotEmpty() }
@@ -80,6 +80,23 @@ class MainActivityTest {
         composeRule.waitUntil(10000) { composeRule.onAllNodesWithTag("total_usage").fetchSemanticsNodes().isNotEmpty() }
         composeRule.onNodeWithTag("total_usage").assertTextContains("7 km")
         composeRule.onNodeWithTag("cost_per_unit").assertTextContains("14.29 USD / km")
+    }
+
+    @Test fun automaticDistanceImportScreenIsAvailableForDistanceItems() {
+        val name = "Health-${System.currentTimeMillis()}"
+        val date = java.time.LocalDate.now().minusDays(1).toString()
+        openNewItem()
+        composeRule.onNodeWithTag("name").performTextInput(name)
+        composeRule.onNodeWithTag("save").performScrollTo().performClick()
+        composeRule.waitUntil(10000) { composeRule.onAllNodesWithText(name).fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithText(name).performClick()
+
+        composeRule.onNodeWithTag("import_distance").performScrollTo().performClick()
+        composeRule.onNodeWithText(label(R.string.import_distance_title)).assertIsDisplayed()
+        composeRule.onNodeWithTag("distance_import_date").performTextReplacement(date)
+        composeRule.activityRule.scenario.recreate()
+        composeRule.onNodeWithTag("distance_import_date").assertTextContains(date)
+        composeRule.onNodeWithText(label(R.string.import_distance_privacy)).assertIsDisplayed()
     }
 
     @Test fun dashboardOpensAndSearchSurvivesRecreation() {

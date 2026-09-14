@@ -121,6 +121,7 @@ fun ItemDetails(
     back: () -> Unit,
     edit: () -> Unit,
     addUsage: () -> Unit,
+    importDistance: (() -> Unit)?,
     editUsage: (Long) -> Unit,
     photos: List<ItemPhoto>,
     addPhoto: () -> Unit,
@@ -162,6 +163,11 @@ fun ItemDetails(
         if (item.notes.isNotEmpty()) Text(item.notes)
         if (error) Text(stringResource(R.string.storage_error), color = MaterialTheme.colorScheme.error)
         Button(onClick = addUsage, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.add_usage)) }
+        if (importDistance != null) {
+            OutlinedButton(onClick = importDistance, enabled = !busy, modifier = Modifier.fillMaxWidth().testTag("import_distance")) {
+                Text(stringResource(R.string.import_distance))
+            }
+        }
         Button(onClick = addPhoto, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.add_photo)) }
         OutlinedButton(onClick = viewPhotos, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.recorded_photos, photos.size))
@@ -175,6 +181,9 @@ fun ItemDetails(
                     Column(Modifier.padding(16.dp)) {
                         Text("+${event.value.asPlainValue()} ${item.metric.unit}", style = MaterialTheme.typography.titleMedium)
                         Text(event.date.toString())
+                        if (event.source == UsageSource.AUTOMATIC) {
+                            Text(stringResource(R.string.automatic_health_connect), color = MaterialTheme.colorScheme.primary)
+                        }
                         if (event.notes.isNotEmpty()) Text(event.notes)
                     }
                 }

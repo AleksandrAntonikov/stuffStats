@@ -30,4 +30,9 @@ class AppDestinationTest {
         assertEquals("item/42/photos/add", AppDestination.AddPhoto.routeFor(itemId = 42))
         assertEquals("item/42/photos", AppDestination.PhotoHistory.routeFor(itemId = 42))
     }
+
+    @Test
+    fun distanceImportRouteReplacesItemArgument() {
+        assertEquals("item/42/distance/import", AppDestination.ImportDistance.routeFor(itemId = 42))
+    }
 }

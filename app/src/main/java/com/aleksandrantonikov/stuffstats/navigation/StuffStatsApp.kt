@@ -29,12 +29,14 @@ fun StuffStatsApp() {
                 RoomUsageEventRepository(database),
                 RoomItemPhotoRepository(database),
                 photoFiles,
+                HealthConnectDistanceSource(context),
             )
         }
     })
     val state by model.state.collectAsStateWithLifecycle()
     val busy by model.saving.collectAsStateWithLifecycle()
     val error by model.error.collectAsStateWithLifecycle()
+    val distanceImport by model.distanceImport.collectAsStateWithLifecycle()
     val nav = rememberNavController()
     BackHandler(enabled = busy) { }
     NavHost(navController = nav, startDestination = AppDestination.Home.route) {
@@ -70,6 +72,11 @@ fun StuffStatsApp() {
                         back = { nav.navigateUp() },
                         edit = { model.clearError(); nav.navigate(AppDestination.EditItem.routeFor(item.id)) },
                         addUsage = { model.clearError(); nav.navigate(AppDestination.AddUsage.routeFor(item.id)) },
+                        importDistance = if (!item.isArchived && item.metric.type == com.aleksandrantonikov.stuffstats.domain.MetricType.DISTANCE) {
+                            { nav.navigate(AppDestination.ImportDistance.routeFor(item.id)) }
+                        } else {
+                            null
+                        },
                         editUsage = { model.clearError(); nav.navigate(AppDestination.EditUsage.routeFor(item.id, it)) },
                         photos = state.photosFor(item.id),
                         addPhoto = { model.clearError(); nav.navigate(AppDestination.AddPhoto.routeFor(item.id)) },
@@ -91,6 +98,26 @@ fun StuffStatsApp() {
                 }
             } else {
                 UsageEditor(item, null, busy, error, back = { nav.navigateUp() }, save = { model.saveUsage(it) { nav.popBackStack() } })
+            }
+        }
+        composable(
+            AppDestination.ImportDistance.route,
+            arguments = listOf(navArgument("itemId") { type = NavType.LongType }),
+        ) { entry ->
+            val item = state.items.find { it.id == entry.arguments?.getLong("itemId") }
+            if (item == null) {
+                ItemFrame(stringResource(R.string.import_distance_title), { nav.navigateUp() }) {
+                    Text(stringResource(if (state.loading) R.string.loading else R.string.item_missing))
+                }
+            } else {
+                DistanceImportScreen(
+                    item = item,
+                    state = distanceImport,
+                    back = { nav.navigateUp() },
+                    prepare = { model.prepareDistanceImport(item) },
+                    permissionResult = { model.onDistancePermissionResult(item.id, it) },
+                    import = { model.importDistance(item, it) },
+                )
             }
         }
         composable(
