@@ -3,6 +3,7 @@ package com.aleksandrantonikov.stuffstats.domain
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.Currency
 import kotlinx.coroutines.flow.Flow
 
@@ -22,6 +23,11 @@ data class ItemUsageStats(
     val totalUsage: BigDecimal,
     val costPerUnit: BigDecimal?,
     val eventCount: Int,
+    val daysOwned: Long?,
+    val firstUsageDate: LocalDate?,
+    val lastUsageDate: LocalDate?,
+    val averagePerWeek: BigDecimal?,
+    val averagePerMonth: BigDecimal?,
 )
 
 object UsageValidation {
@@ -47,14 +53,29 @@ object UsageValidation {
 }
 
 object UsageCalculations {
-    fun forItem(item: Item, events: List<UsageEvent>): ItemUsageStats {
+    fun forItem(item: Item, events: List<UsageEvent>, today: LocalDate = LocalDate.now()): ItemUsageStats {
         val matching = events.filter { it.itemId == item.id }
         val total = matching.fold(BigDecimal.ZERO) { sum, event -> sum + event.value }.normalize()
         val pricePerUnit = item.priceMinor?.takeIf { total > BigDecimal.ZERO }?.let { minor ->
             val currencyDigits = Currency.getInstance(item.currency).defaultFractionDigits
             BigDecimal.valueOf(minor, currencyDigits).divide(total, currencyDigits, RoundingMode.HALF_UP)
         }
-        return ItemUsageStats(total, pricePerUnit, matching.size)
+        val firstUsage = matching.minOfOrNull(UsageEvent::date)
+        val lastUsage = matching.maxOfOrNull(UsageEvent::date)
+        val observedDays = firstUsage?.let { ChronoUnit.DAYS.between(it, today).coerceAtLeast(0) + 1 }
+        fun average(days: BigDecimal) = observedDays?.let {
+            total.multiply(days).divide(BigDecimal.valueOf(it), 2, RoundingMode.HALF_UP).normalize()
+        }
+        return ItemUsageStats(
+            totalUsage = total,
+            costPerUnit = pricePerUnit,
+            eventCount = matching.size,
+            daysOwned = item.purchaseDate?.let { ChronoUnit.DAYS.between(it, today).coerceAtLeast(0) + 1 },
+            firstUsageDate = firstUsage,
+            lastUsageDate = lastUsage,
+            averagePerWeek = firstUsage?.let { average(BigDecimal.valueOf(7)) },
+            averagePerMonth = firstUsage?.let { average(BigDecimal("30.4375")) },
+        )
     }
 }
 

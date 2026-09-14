@@ -15,6 +15,7 @@ import androidx.navigation.compose.*
 import com.aleksandrantonikov.stuffstats.R
 import com.aleksandrantonikov.stuffstats.data.*
 import com.aleksandrantonikov.stuffstats.ui.item.*
+import com.aleksandrantonikov.stuffstats.ui.screens.DashboardScreen
 
 @Composable
 fun StuffStatsApp() {
@@ -42,6 +43,7 @@ fun StuffStatsApp() {
                 state,
                 add = { model.clearError(); nav.navigate(AppDestination.AddItem.route) },
                 open = { model.clearError(); nav.navigate(AppDestination.ItemDetails.routeFor(it)) },
+                dashboard = { model.clearError(); nav.navigate(AppDestination.Dashboard.route) },
                 photoFile = model::photoFile,
             )
         }
@@ -161,6 +163,13 @@ fun StuffStatsApp() {
                     photoFile = model::photoFile,
                 )
             }
+        }
+        composable(AppDestination.Dashboard.route) {
+            DashboardScreen(
+                state = state,
+                back = { nav.navigateUp() },
+                openItem = { model.clearError(); nav.navigate(AppDestination.ItemDetails.routeFor(it)) },
+            )
         }
     }
 }

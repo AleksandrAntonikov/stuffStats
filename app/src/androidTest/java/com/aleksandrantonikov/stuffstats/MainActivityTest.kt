@@ -11,12 +11,16 @@ import org.junit.runner.RunWith
 class MainActivityTest {
     @get:Rule val composeRule = createAndroidComposeRule<MainActivity>()
     private fun label(id: Int) = composeRule.activity.getString(id)
+    private fun openNewItem() {
+        composeRule.onNodeWithText(label(R.string.add_item)).performClick()
+        composeRule.waitUntil(10000) { composeRule.onAllNodesWithTag("name").fetchSemanticsNodes().isNotEmpty() }
+    }
     @Test fun homeScreenIsDisplayed() {
         composeRule.onNodeWithText(label(R.string.home_title)).assertIsDisplayed()
     }
     @Test fun createEditArchiveRestoreAndRecreate() {
         val name = "Phase1-${System.currentTimeMillis()}"
-        composeRule.onNodeWithText(label(R.string.add_item)).performClick()
+        openNewItem()
         composeRule.onNodeWithTag("name").performTextInput(name)
         composeRule.onNodeWithTag("price").performTextInput("100.00")
         composeRule.activityRule.scenario.recreate()
@@ -25,19 +29,20 @@ class MainActivityTest {
         composeRule.waitUntil(10000) { composeRule.onAllNodesWithText(label(R.string.home_title)).fetchSemanticsNodes().isNotEmpty() && composeRule.onAllNodesWithText(name).fetchSemanticsNodes().isNotEmpty() }
         composeRule.onNodeWithText(name).performClick()
         composeRule.onNodeWithText("100.00 USD", substring = true).assertIsDisplayed()
-        composeRule.onNodeWithText(label(R.string.edit_item)).performClick()
+        composeRule.onNodeWithText(label(R.string.edit_item)).performScrollTo().performClick()
+        composeRule.waitUntil(10000) { composeRule.onAllNodesWithTag("name").fetchSemanticsNodes().isNotEmpty() }
         composeRule.onNodeWithTag("name").performTextReplacement("$name edited")
         composeRule.onNodeWithTag("save").performScrollTo().performClick()
         composeRule.waitUntil(10000) { composeRule.onAllNodesWithTag("save").fetchSemanticsNodes().isEmpty() && composeRule.onAllNodesWithText("$name edited").fetchSemanticsNodes().isNotEmpty() }
         composeRule.activityRule.scenario.recreate()
         composeRule.onNodeWithText("$name edited").assertIsDisplayed()
-        composeRule.onNodeWithText(label(R.string.archive_item)).performClick()
+        composeRule.onNodeWithText(label(R.string.archive_item)).performScrollTo().performClick()
         composeRule.onNodeWithText(label(R.string.confirm)).performClick()
         composeRule.waitUntil(10000) { composeRule.onAllNodesWithText(label(R.string.archived_items)).fetchSemanticsNodes().isNotEmpty() }
         composeRule.onNodeWithText(label(R.string.archived_items)).performClick()
         composeRule.waitUntil(10000) { composeRule.onAllNodesWithText("$name edited").fetchSemanticsNodes().isNotEmpty() }
         composeRule.onNodeWithText("$name edited").performClick()
-        composeRule.onNodeWithText(label(R.string.restore_item)).performClick()
+        composeRule.onNodeWithText(label(R.string.restore_item)).performScrollTo().performClick()
         composeRule.onNodeWithText(label(R.string.confirm)).performClick()
         composeRule.waitUntil(10000) { composeRule.onAllNodesWithText(label(R.string.active_items)).fetchSemanticsNodes().isNotEmpty() }
         composeRule.onNodeWithText(label(R.string.active_items)).performClick()
@@ -47,7 +52,7 @@ class MainActivityTest {
 
     @Test fun usageWorkflowCalculatesEditsAndDeletes() {
         val name = "Usage-${System.currentTimeMillis()}"
-        composeRule.onNodeWithText(label(R.string.add_item)).performClick()
+        openNewItem()
         composeRule.onNodeWithTag("name").performTextInput(name)
         composeRule.onNodeWithTag("price").performTextInput("100.00")
         composeRule.onNodeWithTag("save").performScrollTo().performClick()
@@ -75,5 +80,24 @@ class MainActivityTest {
         composeRule.waitUntil(10000) { composeRule.onAllNodesWithTag("total_usage").fetchSemanticsNodes().isNotEmpty() }
         composeRule.onNodeWithTag("total_usage").assertTextContains("7 km")
         composeRule.onNodeWithTag("cost_per_unit").assertTextContains("14.29 USD / km")
+    }
+
+    @Test fun dashboardOpensAndSearchSurvivesRecreation() {
+        val name = "Filter-${System.currentTimeMillis()}"
+        openNewItem()
+        composeRule.onNodeWithTag("name").performTextInput(name)
+        composeRule.onNodeWithTag("save").performScrollTo().performClick()
+        composeRule.waitUntil(10000) { composeRule.onAllNodesWithText(name).fetchSemanticsNodes().isNotEmpty() }
+
+        composeRule.onNodeWithText(label(R.string.dashboard)).performClick()
+        composeRule.onNodeWithText(label(R.string.dashboard_overview)).assertIsDisplayed()
+        composeRule.onNodeWithText(label(R.string.purchase_totals)).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(label(R.string.back)).performClick()
+
+        composeRule.onNodeWithTag("item_search").performTextInput(name)
+        composeRule.onNodeWithTag("item_card").assertIsDisplayed()
+        composeRule.activityRule.scenario.recreate()
+        composeRule.onNodeWithTag("item_search").assertTextContains(name)
+        composeRule.onNodeWithTag("item_card").assertIsDisplayed()
     }
 }

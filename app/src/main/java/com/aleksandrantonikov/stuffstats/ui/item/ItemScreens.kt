@@ -20,34 +20,88 @@ import java.time.LocalDate
 import java.util.Locale
 
 @Composable
-fun ItemList(state: ItemsState, add: () -> Unit, open: (Long) -> Unit, photoFile: (String) -> File?) {
+fun ItemList(
+    state: ItemsState,
+    add: () -> Unit,
+    open: (Long) -> Unit,
+    dashboard: () -> Unit,
+    photoFile: (String) -> File?,
+) {
     var archived by rememberSaveable { mutableStateOf(false) }
-    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.home_title)) }) },
+    var query by rememberSaveable { mutableStateOf("") }
+    var category by rememberSaveable { mutableStateOf("ALL") }
+    var sort by rememberSaveable { mutableStateOf(CatalogSort.RECENTLY_ADDED.name) }
+    Scaffold(topBar = {
+        TopAppBar(
+            title = { Text(stringResource(R.string.home_title)) },
+            actions = { TextButton(onClick = dashboard) { Text(stringResource(R.string.dashboard)) } },
+        )
+    },
         floatingActionButton = { FloatingActionButton(onClick = add) { Text(stringResource(R.string.add_item), Modifier.padding(16.dp)) } }) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp)) {
+        Column(
+            Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                label = { Text(stringResource(R.string.search_items)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().testTag("item_search"),
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(selected = !archived, onClick = { archived = false }, label = { Text(stringResource(R.string.active_items)) })
                 FilterChip(selected = archived, onClick = { archived = true }, label = { Text(stringResource(R.string.archived_items)) })
             }
+            Choice(
+                stringResource(R.string.category),
+                listOf("ALL" to stringResource(R.string.all_categories)) + Category.entries.map { it.name to categoryLabel(it) },
+                category,
+                true,
+            ) { category = it }
+            Choice(
+                stringResource(R.string.sort_by),
+                CatalogSort.entries.map { it.name to catalogSortLabel(it) },
+                sort,
+                true,
+            ) { sort = it }
             when {
                 state.loading -> CircularProgressIndicator()
                 state.failed -> Text(stringResource(R.string.storage_error))
                 else -> {
-                    val visible = state.items.filter { it.isArchived == archived }
-                    if (visible.isEmpty()) Text(stringResource(R.string.home_empty_title), Modifier.padding(vertical = 24.dp))
+                    val visible = CatalogFiltering.apply(
+                        items = state.items,
+                        events = state.events,
+                        archived = archived,
+                        category = category.takeUnless { it == "ALL" }?.let(Category::valueOf),
+                        query = query,
+                        sort = CatalogSort.valueOf(sort),
+                    )
+                    Text(stringResource(R.string.items_found, visible.size), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (visible.isEmpty()) {
+                        Text(
+                            stringResource(
+                                if (state.items.none { it.isArchived == archived }) R.string.home_empty_title else R.string.no_matching_items,
+                            ),
+                            Modifier.padding(vertical = 16.dp),
+                        )
+                    }
                     LazyColumn(contentPadding = PaddingValues(bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(visible, key = { it.id }) { item ->
                             val stats = state.statsFor(item)
-                            Card(onClick = { open(item.id) }, modifier = Modifier.fillMaxWidth()) {
+                            Card(onClick = { open(item.id) }, modifier = Modifier.fillMaxWidth().testTag("item_card")) {
                                 Column(Modifier.padding(16.dp)) {
                                     state.photosFor(item.id).firstOrNull()?.let { photo ->
                                         StoredPhotoImage(photo.imagePath, photoFile, Modifier.fillMaxWidth().height(140.dp))
                                         Spacer(Modifier.height(8.dp))
                                     }
                                     Text(item.name, style = MaterialTheme.typography.titleLarge)
-                                    Text(categoryLabel(item.category))
-                                    Text("${stats.totalUsage.asPlainValue()} ${item.metric.unit}")
-                                    stats.costPerUnit?.let { Text("${it.toPlainString()} ${item.currency} / ${item.metric.unit}") }
+                                    Text(categoryLabel(item.category), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text("${stats.totalUsage.asPlainValue()} ${item.metric.unit}", style = MaterialTheme.typography.headlineSmall)
+                                    stats.costPerUnit?.let {
+                                        Text("${it.toPlainString()} ${item.currency} / ${item.metric.unit}", style = MaterialTheme.typography.titleMedium)
+                                    }
+                                    stats.lastUsageDate?.let { Text(stringResource(R.string.last_used, it.toString())) }
                                 }
                             }
                         }
@@ -89,8 +143,22 @@ fun ItemDetails(
             modifier = Modifier.testTag("cost_per_unit"),
         )
         Text(stringResource(R.string.recorded_events, stats.eventCount))
+        Text(stringResource(R.string.recorded_photos, photos.size))
         Text(stringResource(R.string.purchase_price) + ": " + if (item.priceMinor == null) "—" else "${ItemValidation.priceText(item)} ${item.currency}")
         Text(stringResource(R.string.purchase_date) + ": " + (item.purchaseDate?.toString() ?: "—"))
+        stats.daysOwned?.let { Text(stringResource(R.string.days_owned, it)) }
+        HorizontalDivider()
+        Text(stringResource(R.string.usage_statistics), style = MaterialTheme.typography.titleLarge)
+        Text(stringResource(R.string.first_usage) + ": " + (stats.firstUsageDate?.toString() ?: "—"))
+        Text(stringResource(R.string.last_usage) + ": " + (stats.lastUsageDate?.toString() ?: "—"))
+        Text(
+            stats.averagePerWeek?.let { stringResource(R.string.average_per_week, it.asPlainValue(), item.metric.unit) }
+                ?: stringResource(R.string.average_unavailable),
+        )
+        Text(
+            stats.averagePerMonth?.let { stringResource(R.string.average_per_month, it.asPlainValue(), item.metric.unit) }
+                ?: stringResource(R.string.average_unavailable),
+        )
         if (item.notes.isNotEmpty()) Text(item.notes)
         if (error) Text(stringResource(R.string.storage_error), color = MaterialTheme.colorScheme.error)
         Button(onClick = addUsage, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.add_usage)) }
@@ -190,4 +258,11 @@ fun metricLabel(value: MetricType): String = stringResource(when (value) {
     MetricType.WASH_COUNT -> R.string.metric_washes
     MetricType.HOURS -> R.string.metric_hours
     MetricType.CUSTOM -> R.string.metric_custom
+})
+
+@Composable
+private fun catalogSortLabel(value: CatalogSort): String = stringResource(when (value) {
+    CatalogSort.RECENTLY_ADDED -> R.string.sort_recent
+    CatalogSort.NAME -> R.string.sort_name
+    CatalogSort.LAST_USED -> R.string.sort_last_used
 })
