@@ -86,6 +86,17 @@ class PhotoFileStore(private val context: Context) {
         safeFile(photoDirectory, imagePath)?.delete()
     }
 
+    suspend fun pruneStaleTemporaryFiles(
+        nowMillis: Long = System.currentTimeMillis(),
+        maximumAgeMillis: Long = MAX_TEMPORARY_FILE_AGE_MILLIS,
+    ) = withContext(Dispatchers.IO) {
+        require(maximumAgeMillis >= 0)
+        captureDirectory.deleteFilesOlderThan(nowMillis, maximumAgeMillis)
+        photoDirectory.deleteFilesOlderThan(nowMillis, maximumAgeMillis) { file ->
+            file.name.startsWith(".") && file.name.endsWith(".pending")
+        }
+    }
+
     fun fileFor(imagePath: String): File? = safeFile(photoDirectory, imagePath)?.takeIf(File::isFile)
 
     private fun decodeSampled(file: File): Bitmap {
@@ -125,9 +136,23 @@ class PhotoFileStore(private val context: Context) {
         return file.takeIf { it.canonicalFile.parentFile == directory.canonicalFile }
     }
 
+    private fun File.deleteFilesOlderThan(
+        nowMillis: Long,
+        maximumAgeMillis: Long,
+        include: (File) -> Boolean = { true },
+    ) {
+        listFiles()
+            ?.asSequence()
+            ?.filter(File::isFile)
+            ?.filter(include)
+            ?.filter { nowMillis - it.lastModified() >= maximumAgeMillis }
+            ?.forEach(File::delete)
+    }
+
     private companion object {
         const val MAX_SOURCE_BYTES = 40L * 1024 * 1024
         const val MAX_EDGE = 2048
         const val JPEG_QUALITY = 90
+        const val MAX_TEMPORARY_FILE_AGE_MILLIS = 24L * 60 * 60 * 1000
     }
 }

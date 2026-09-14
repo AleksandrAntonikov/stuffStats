@@ -31,6 +31,18 @@ class ItemsViewModel(
     private val photoFiles: PhotoFileStore,
     private val automaticDistanceSource: AutomaticDistanceSource,
 ) : ViewModel() {
+    init {
+        viewModelScope.launch {
+            try {
+                photoFiles.pruneStaleTemporaryFiles()
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                // Cleanup is best effort and must not make local data unavailable.
+            }
+        }
+    }
+
     val state = combine(repository.observeItems(), usageRepository.observeAll(), photoRepository.observeAll()) { items, events, photos ->
         ItemsState(loading = false, items = items, events = events, photos = photos)
     }
@@ -143,13 +155,15 @@ class ItemsViewModel(
             done = done,
         )
     }
-    fun deletePhoto(photo: ItemPhoto, done: () -> Unit) = mutate(
-        action = {
-            val deleted = photoRepository.delete(photo.id)
-            photoFiles.delete(deleted.imagePath)
-        },
-        done = done,
-    )
+    fun deletePhoto(photo: ItemPhoto, done: () -> Unit) {
+        mutate(
+            action = {
+                val deleted = photoRepository.delete(photo.id)
+                photoFiles.delete(deleted.imagePath)
+            },
+            done = done,
+        )
+    }
     private fun mutate(action: suspend () -> Unit, done: () -> Unit) {
         if (_saving.value) return
         _saving.value = true

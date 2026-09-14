@@ -4,6 +4,7 @@ package com.aleksandrantonikov.stuffstats.ui.item
 
 import android.graphics.BitmapFactory
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -85,6 +86,7 @@ fun PhotoEditor(
         discardCapture(captureToken)
         back()
     }
+    BackHandler(enabled = !busy, onBack = leave)
 
     ItemFrame(stringResource(R.string.add_photo_title), leave, busy) {
         Text(item.name, style = MaterialTheme.typography.titleLarge)

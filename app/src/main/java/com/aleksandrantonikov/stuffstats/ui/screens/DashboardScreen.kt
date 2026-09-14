@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.unit.dp
 import com.aleksandrantonikov.stuffstats.R
 import com.aleksandrantonikov.stuffstats.domain.CostLeader
@@ -82,7 +83,7 @@ fun DashboardScreen(state: ItemsState, back: () -> Unit, openItem: (Long) -> Uni
                             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 Text(tracked.name, style = MaterialTheme.typography.titleLarge)
                                 Text("${tracked.totalUsage.asPlainValue()} ${tracked.unit}", style = MaterialTheme.typography.headlineSmall)
-                                Text(stringResource(R.string.recorded_entries, tracked.eventCount))
+                                Text(pluralStringResource(R.plurals.recorded_entries, tracked.eventCount, tracked.eventCount))
                             }
                         }
                     }

@@ -31,7 +31,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Verify project
-        run: ./gradlew testDebugUnitTest lintDebug assembleDebug --stacktrace
+        run: ./gradlew testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease --stacktrace
 
   device-tests:
     runs-on: ubuntu-latest

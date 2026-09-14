@@ -5,7 +5,6 @@
   <string name="home_empty_title">No tracked items yet</string>
   <string name="home_empty_body">Add an item to start measuring its real-world value.</string>
   <string name="add_item">Add item</string>
-  <string name="view_demo_item">Open navigation preview</string>
   <string name="dashboard">Dashboard</string>
   <string name="dashboard_overview">Overview</string>
   <string name="usage_records">Usage records</string>
@@ -15,7 +14,10 @@
   <string name="no_purchase_data">No purchase prices for active items.</string>
   <string name="most_tracked_item">Most regularly tracked</string>
   <string name="no_activity_data">Record usage to see activity insights.</string>
-  <string name="recorded_entries">%1$d recorded events</string>
+  <plurals name="recorded_entries">
+    <item quantity="one">%1$d recorded event</item>
+    <item quantity="other">%1$d recorded events</item>
+  </plurals>
   <string name="cost_leaders">Lowest cost per comparable unit</string>
   <string name="no_cost_data">Cost efficiency appears after priced items have usage.</string>
   <string name="cost_leader_group">%1$s · %2$s</string>
@@ -27,7 +29,6 @@
   <string name="edit_usage_title">Edit usage</string>
   <string name="photo_history_title">Photo history</string>
   <string name="add_photo_title">Add condition photo</string>
-  <string name="phase_zero_placeholder">This screen is ready for implementation in the next phase.</string>
   <string name="back">Back</string>
   <string name="add_usage">Add usage</string>
   <string name="import_distance">Import from Health Connect</string>
@@ -51,7 +52,6 @@
   <string name="health_permissions_body">StuffStats reads only distance data after you grant permission. A selected day’s total is assigned only to the item you explicitly choose.</string>
   <string name="health_permissions_storage">Imported distance is stored locally as a usage event. StuffStats has no Internet permission and does not upload health data.</string>
   <string name="close">Close</string>
-  <string name="view_photos">View photos</string>
   <string name="add_photo">Add photo</string>
   <string name="choose_photo">Choose from photos</string>
   <string name="take_photo">Take a photo</string>
@@ -63,7 +63,6 @@
   <string name="delete_photo_explanation">This private photo and its condition record will be permanently removed.</string>
   <string name="item_photo">Item condition photo</string>
   <string name="edit_item">Edit item</string>
-  <string name="phase_zero_label">Phase 0 · Local-first Android foundation</string>
   <string name="active_items">Active</string>
   <string name="archived_items">Archive</string>
   <string name="search_items">Search name, notes, metric…</string>

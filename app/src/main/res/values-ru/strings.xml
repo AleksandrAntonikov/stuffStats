@@ -5,7 +5,6 @@
   <string name="home_empty_title">Пока нет вещей</string>
   <string name="home_empty_body">Добавьте вещь, чтобы начать измерять её реальную ценность.</string>
   <string name="add_item">Добавить вещь</string>
-  <string name="view_demo_item">Проверить навигацию</string>
   <string name="dashboard">Статистика</string>
   <string name="dashboard_overview">Обзор</string>
   <string name="usage_records">Записи использования</string>
@@ -15,7 +14,12 @@
   <string name="no_purchase_data">У активных вещей не указана цена покупки.</string>
   <string name="most_tracked_item">Самая регулярно учитываемая вещь</string>
   <string name="no_activity_data">Добавьте записи использования, чтобы увидеть статистику.</string>
-  <string name="recorded_entries">Записей использования: %1$d</string>
+  <plurals name="recorded_entries">
+    <item quantity="one">%1$d запись использования</item>
+    <item quantity="few">%1$d записи использования</item>
+    <item quantity="many">%1$d записей использования</item>
+    <item quantity="other">%1$d записи использования</item>
+  </plurals>
   <string name="cost_leaders">Минимальная стоимость в сопоставимых единицах</string>
   <string name="no_cost_data">Эффективность появится у вещей с ценой и использованием.</string>
   <string name="cost_leader_group">%1$s · %2$s</string>
@@ -27,7 +31,6 @@
   <string name="edit_usage_title">Изменить использование</string>
   <string name="photo_history_title">История фотографий</string>
   <string name="add_photo_title">Добавить фото состояния</string>
-  <string name="phase_zero_placeholder">Экран подготовлен для реализации в следующей фазе.</string>
   <string name="back">Назад</string>
   <string name="add_usage">Добавить использование</string>
   <string name="import_distance">Импортировать из Health Connect</string>
@@ -51,7 +54,6 @@
   <string name="health_permissions_body">StuffStats читает только данные о расстоянии после вашего разрешения. Итог за выбранный день назначается только явно выбранной вещи.</string>
   <string name="health_permissions_storage">Импортированное расстояние хранится локально как запись использования. У StuffStats нет разрешения на Интернет, и данные о здоровье никуда не отправляются.</string>
   <string name="close">Закрыть</string>
-  <string name="view_photos">История фотографий</string>
   <string name="add_photo">Добавить фото</string>
   <string name="choose_photo">Выбрать из галереи</string>
   <string name="take_photo">Сфотографировать</string>
@@ -63,7 +65,6 @@
   <string name="delete_photo_explanation">Локальная фотография и запись о состоянии будут удалены без возможности восстановления.</string>
   <string name="item_photo">Фотография состояния вещи</string>
   <string name="edit_item">Изменить вещь</string>
-  <string name="phase_zero_label">Фаза 0 · Local-first Android-каркас</string>
   <string name="active_items">Активные</string>
   <string name="archived_items">Архив</string>
   <string name="search_items">Поиск по названию, заметкам, метрике…</string>

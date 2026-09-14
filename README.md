@@ -6,7 +6,7 @@ Footwear is the first complete use case, but the domain is intentionally generic
 
 ## Current status
 
-Phases 0 through 5 are implemented:
+Phases 0 through 6 are implemented:
 
 - native Android project using Kotlin and Jetpack Compose;
 - Material 3 light, dark, and dynamic color themes;
@@ -16,7 +16,7 @@ Phases 0 through 5 are implemented:
 - unit and instrumentation test foundations;
 - GitHub Actions verification.
 
-Items, primary metrics, usage events and condition photos persist locally. You can create, edit, archive and restore items; record usage manually; import a selected day’s distance from Health Connect; build a chronological photo history; search and filter the catalog; and review lifetime and cross-item statistics on the dashboard. See [Phase 1 details](docs/phase-1-local-items.md), [Phase 2 details](docs/phase-2-usage-events.md), [Phase 3 details](docs/phase-3-condition-photos.md), [Phase 4 details](docs/phase-4-dashboard-and-refinement.md) and [Phase 5 details](docs/phase-5-automatic-distance.md).
+Items, primary metrics, usage events and condition photos persist locally. You can create, edit, archive and restore items; record usage manually; import a selected day’s distance from Health Connect; build a chronological photo history; search and filter the catalog; and review lifetime and cross-item statistics on the dashboard. Phase 6 adds large-text and compact-screen hardening, temporary-photo cleanup, and optimized release builds. See [Phase 1 details](docs/phase-1-local-items.md), [Phase 2 details](docs/phase-2-usage-events.md), [Phase 3 details](docs/phase-3-condition-photos.md), [Phase 4 details](docs/phase-4-dashboard-and-refinement.md), [Phase 5 details](docs/phase-5-automatic-distance.md) and [Phase 6 details](docs/phase-6-mvp-stabilization.md).
 
 ## Technology baseline
 
@@ -41,7 +41,7 @@ On Windows PowerShell:
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
 $env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
-.\gradlew.bat testDebugUnitTest lintDebug assembleDebug
+.\gradlew.bat testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease
 ```
 
 ## Product constraints

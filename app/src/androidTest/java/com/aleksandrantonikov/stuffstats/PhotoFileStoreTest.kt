@@ -8,6 +8,7 @@ import com.aleksandrantonikov.stuffstats.data.PhotoFileStore
 import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,6 +43,25 @@ class PhotoFileStoreTest {
             store.delete(imagePath)
             assertNull(store.fileFor(imagePath))
             File(context.cacheDir, "photo-captures/${capture.token}").delete()
+        }
+    }
+
+    @Test
+    fun staleCapturesArePrunedWithoutDeletingFreshCapture() {
+        runBlocking {
+            val store = PhotoFileStore(context)
+            val stale = store.newCaptureTarget()
+            val fresh = store.newCaptureTarget()
+            val staleFile = File(context.cacheDir, "photo-captures/${stale.token}")
+            val freshFile = File(context.cacheDir, "photo-captures/${fresh.token}")
+            val now = System.currentTimeMillis()
+            assertTrue(staleFile.setLastModified(now - 2_000))
+
+            store.pruneStaleTemporaryFiles(nowMillis = now, maximumAgeMillis = 1_000)
+
+            assertTrue(!staleFile.exists())
+            assertNotNull(freshFile.takeIf(File::exists))
+            store.discardCapture(fresh.token)
         }
     }
 }
